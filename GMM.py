@@ -92,6 +92,6 @@ if __name__ == '__main__':
     plt.scatter(X[index==2][:,0],X[index==2][:,1],s=60,c=u'y',marker=u'o')
     plt.scatter(X[index==3][:,0],X[index==3][:,1],s=60,c=u'g',marker=u'o')
     plt.show()
-
+	pass
 
 
