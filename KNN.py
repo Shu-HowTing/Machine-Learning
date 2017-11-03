@@ -66,3 +66,7 @@ if __name__ == "__main__":
     testX = array([0.1, 0.3])
     outputLabel = kNNClassify(testX, dataSet, labels, 3)
     print("Your input is:", testX, "and classified to class: ", outputLabel)
+
+	
+	
+	pass
