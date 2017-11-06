@@ -108,3 +108,4 @@ X = np.loadtxt('HorseColicTest.txt')
 print(X.shape)
 print(type(X[1][1]))
 >>>>>>> d342b1271f8f34211a4b1da7b8d64ed320fe6cf1
+print("hello world")
