@@ -136,3 +136,7 @@ plt.plot(np.array(result))
 plt.ylabel("bestvalue")
 plt.xlabel("n")
 plt.show()
+<<<<<<< HEAD
+=======
+pass
+>>>>>>> d342b1271f8f34211a4b1da7b8d64ed320fe6cf1
