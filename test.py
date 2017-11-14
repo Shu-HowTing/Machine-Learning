@@ -27,7 +27,7 @@
 # #print(new_data)
 import numpy as np
 import csv
-<<<<<<< HEAD
+
 # f = lambda x_y: x_y[0] + x_y[1]
 # print(f((3,4)))
 #
@@ -72,7 +72,7 @@ print(np.multiply(A,A))
 print(np.dot(A, A))
 l = np.array([1,23,45,6,7,8,9,9,0,6,5,43])
 print(np.array_split(l,4))
-=======
+#=======
 f = lambda x_y: x_y[0] + x_y[1]
 print(f((3,4)))
 
@@ -107,5 +107,5 @@ for i in X:
 X = np.loadtxt('HorseColicTest.txt')
 print(X.shape)
 print(type(X[1][1]))
->>>>>>> d342b1271f8f34211a4b1da7b8d64ed320fe6cf1
+
 print("hello world")
