@@ -3,7 +3,7 @@
 
 '''
 ================================================================
-                    LLE降维算法
+        LLE(Locally_linear_embedding)降维算法
 ================================================================
 Input X: D by N matrix consisting of N data items in D dimensions.
 Output Y: d by N matrix consisting of d < D dimensional embedding coordinates for the input points.
@@ -66,11 +66,11 @@ import numpy as np
 from numpy.matlib import repmat
 
 def lle(X, K, d):
+    X = X.T
     D,N = X.shape
-    print(1,'LLE running on %d points in %d dimensions\n',N,D)
 
     # STEP1: COMPUT PAIRWISE DISTANCES & FIND NEIGHBORS
-    print(1, '-->Finding %d nearest neighbours.\n', K)
+    print(1, '-->Finding %d nearest neighbours.\n' % K)
     X2 = sum(X ** 2, 0)
     X2 = np.asmatrix(X2)
 
@@ -95,22 +95,23 @@ def lle(X, K, d):
     #     λ=(e'G^{-1}e)^{-1}，即最优解w=(e'G^{-1}e)^{-1} G^{-1}e
     #     实际操作时，我们先解线性方程组Gw=e，然后再将解向量w归一化，易见得到的就是上述最优解。
     # ==========================================================================================
-    print(1,'-->Solving for reconstruction weights.\n')
+    print(2,'-->Solving for reconstruction weights.\n')
     if K>D:
         tol = 1e-3
     else:
         tol = 0
-    W = np.zeros((K,N))
+    W = np.zeros((N, N))
     for i in range(N):
         X = np.asmatrix(X)
-        z = X[:, neighborhood[:, i]].reshape(D,K) - repmat(X[:, i], 1, K) # 计算B
+        Z = X[:, neighborhood[:, i]].reshape(D,K) - X[:, i] # 计算Z
 
-        C = np.dot(z.T, z)  # 计算G
+        C = np.dot(Z.T, Z)  # 计算G=Z'*Z
         C = C + np.eye(K) * tol * np.trace(C)
-        print(W[:,i])
-        W[:, i] = np.linalg.solve(C,np.ones((K, 1))).reshape(1,2)  # 解方程Gw=e
 
-        W[:, i] = W[:, i] / sum(W[:, i]);  # 解向量w归一化
+        W[neighborhood[:,i], i] = np.linalg.solve(C,np.ones((K, 1)))  # 解方程Gw=e  e=[1,1,1..,1]
+
+        W[:, i] = W[:, i] / sum(W[:, i]);  # 解向量W归一化
+    print("  -->Done.")
 
     # STEP 3: COMPUTE EMBEDDING FROM EIGENVECTS OF COST MATRIX M = (I - W)'(I-W)
     # =========================================================================================
@@ -121,37 +122,29 @@ def lle(X, K, d):
     #     此外，Y=0为平凡最优解，为了避免这种退化情形，我们不妨假设∑{j}{Yj*Yj'}/N=I
     #     即∑{j}{YajYbj}=Nδ(a,b)，即Y的d个行向量，都在半径为sqrt(N)的N维单位球上，且两两正交。
     # ==========================================================================================
-    print(1,'-->Computing embedding.\n')
-    #M=(M_ij)=(I-W)'(I-W)
-    M = np.diag(np.ones((1,N)))
-    for i in range(N):
-        W = np.asmatrix(W)
-        w = W[:, i];
-        j = neighborhood[:, i];
-        print(j)
-        print(M[i, j])
-        M[i, j] = M[i, j] - w.T
-        M[j, i] = M[j, i] - w;
-        M[j, j] = M[j, j] + w * w.T
-
-
-
-
-
-    # CALCULATION OF EMBEDDING
-    #计算矩阵M=(I-W)'(I-W)的最小d个非零特征值对应的特征向量
-    [Y, eigenvals] = np.linalg.eig(M);
-    Y = Y[:, 1:d].T*sqrt(N)
-
+    print(3,'-->Computing embedding.\n')
+    #M = (I-W)*(I-W)'
+    M =np.dot((np.eye(N) - W), (np.eye(N) - W).T)
+    # v[:,i] is the eigenvector corresponding to the eigenvalue u[i]
+    u, v = np.linalg.eig(M)
+    u_index = np.argsort(np.abs(u))
+    Y = -v[:,u_index[1:d+1]]/np.sqrt(u[u_index[1:d+1]])
+    return Y
+#
 if __name__ == '__main__':
-    X = np.array([[1,2,3,4,5],[3,4,5,6,7],[2,4,5,7,8,]])
-    Y = lle(X, 2, 2)
+    X = np.array([[-20, -8],
+                  [-10, -1],
+                  [0, 0.01],
+                  [10, 1],
+                  [20, 8]])
+    Y = lle(X, 2, 1)
+    print(Y)
 
 
 
-#=====================================================================
+#--------------------------------------------------------------------------------
 ###===================sklearn实现==============================
-
+#
 import matplotlib.pyplot as plt
 
 # This import is needed to modify the way figure behaves
@@ -163,13 +156,14 @@ Axes3D
 
 from sklearn import manifold, datasets
 X, color = datasets.samples_generator.make_swiss_roll(n_samples=1500)
-#print(X.shape)
+#print(X.shape)     #1500*3
 #print(color[1:5])
 
 print("Computing LLE embedding")
-X_r, err = manifold.locally_linear_embedding(X, n_neighbors=12,
-                                             n_components=2)
+X_r, err = manifold.locally_linear_embedding(X, n_neighbors=15,
+                                                 n_components=2)
 print("Done. Reconstruction error: %g" % err)
+#X_r = lle(X, K=15, d=2)
 
 #----------------------------------------------------------------------
 # Plot result
@@ -186,7 +180,6 @@ plt.axis('tight')
 plt.xticks([]), plt.yticks([])
 plt.title('Projected data')
 plt.show()
-
 
 
 
