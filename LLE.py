@@ -63,7 +63,7 @@ Notes
 '''
 #===========================================================================
 import numpy as np
-from numpy.matlib import repmat
+
 
 def lle(X, K, d):
     X = X.T
@@ -75,26 +75,14 @@ def lle(X, K, d):
     X2 = np.asmatrix(X2)
 
     #计算disatnce矩阵，即distance_ij表示第i个数据和第j个数据的距离，diatance是一个对称矩阵，对角线元素为0
-    distance = repmat(X2, N, 1) + repmat(X2.T,1,N) - 2 * np.dot(X.T, X)
+    distance = np.tile(X2, (N, 1)) + np.tile(X2.T,(1,N)) - 2 * np.dot(X.T, X)
     index = np.argsort(distance, axis=0)
     #找出每个样本的k近邻，组成neighborhood矩阵
     neighborhood = index[1:K+1,:]
     #print(neighborhood)
 
     # STEP2: SOLVEFOR RECONSTRUCTION WEIGHTS
-    #=========================================================================================
-    #     首先，因为对于任意i，Wij=0若j不属于Si，故W只需要存K行N列即可。
-    #     其次，易见E(W)极小当且仅当每一求和项极小，因此我们依次计算W的每一列。
-    #     固定列i，记x=Xi，wj=W第j列，ηj=Xj，极小化|x-∑{j=1..K}{wjηj}|^2，满足归一化约束∑{j = 1..k }{wj}=1。
-    #     有：|x-∑{j=1..K}{wjηj}|^2 = |∑{j=1..K}{wjx}-∑{j=1..K}{wjηj}|^2
-    #     用矩阵语言描述：记B=(η_1 - x,..., η_k - x)为D×K矩阵，G=B'B为K×K方阵（讲义中称之为Gram方阵，半正定，在摄动意义下总可以假设它非奇异），
-    #     e=(1,…,1)'为K维单位列向量，则问题化为——
-    #     min |Bw|^2也就是min w'Gw（二次型）   s.t. e'w=1
-    #     用拉格朗日乘数法求此条件极值：做辅助函数F(w,λ)= w'Gw-λ(e'w -1)
-    #     对每个wj求偏导数令为0得Gw=λe，反解出w=G^{-1}λe，代入到归一化约束得:
-    #     λ=(e'G^{-1}e)^{-1}，即最优解w=(e'G^{-1}e)^{-1} G^{-1}e
-    #     实际操作时，我们先解线性方程组Gw=e，然后再将解向量w归一化，易见得到的就是上述最优解。
-    # ==========================================================================================
+
     print(2,'-->Solving for reconstruction weights.\n')
     if K>D:
         tol = 1e-3
@@ -108,27 +96,21 @@ def lle(X, K, d):
         C = np.dot(Z.T, Z)  # 计算G=Z'*Z
         C = C + np.eye(K) * tol * np.trace(C)
 
-        W[neighborhood[:,i], i] = np.linalg.solve(C,np.ones((K, 1)))  # 解方程Gw=e  e=[1,1,1..,1]
+        W[neighborhood[:,i], i] = np.linalg.solve(C,-np.ones((K, 1)))  # 解方程Gw=e  e=[1,1,1..,1]
 
         W[:, i] = W[:, i] / sum(W[:, i]);  # 解向量W归一化
     print("  -->Done.")
 
     # STEP 3: COMPUTE EMBEDDING FROM EIGENVECTS OF COST MATRIX M = (I - W)'(I-W)
-    # =========================================================================================
-    #     将上一步得到的W视为N×N方阵，Y为d×N矩阵，Yi为降维映射下Xi的像。min ∑{i}{|Yi-∑{j}{WijYj}|^2}
-    #     满足归一化约束∑{j = 1..k }{wj}=1，所以Yi-∑{j}{WijYj} = ∑{j}{ Wij (Yi-Yj)}，
-    #     因此若Y为最优解，则所有Yi平移任一相同的向量也是最优解，为了定解，我们不妨假设∑{j}{Yj}=0。
-    #     事实上，若∑{j}{Yj}=Z，则有∑{j}{Yj-Z/N}=0。
-    #     此外，Y=0为平凡最优解，为了避免这种退化情形，我们不妨假设∑{j}{Yj*Yj'}/N=I
-    #     即∑{j}{YajYbj}=Nδ(a,b)，即Y的d个行向量，都在半径为sqrt(N)的N维单位球上，且两两正交。
-    # ==========================================================================================
+
     print(3,'-->Computing embedding.\n')
     #M = (I-W)*(I-W)'
     M =np.dot((np.eye(N) - W), (np.eye(N) - W).T)
     # v[:,i] is the eigenvector corresponding to the eigenvalue u[i]
     u, v = np.linalg.eig(M)
+    #取Y为M的d个非零最小特征值对应的特征向量，即先将特征值从小到大排序，第一个特征值几乎接近0，所以舍弃第一个特征值，取2~d+1个
     u_index = np.argsort(np.abs(u))
-    Y = -v[:,u_index[1:d+1]]/np.sqrt(u[u_index[1:d+1]])
+    Y = v[:,u_index[1:d+1]]/np.sqrt(u[u_index[1:d+1]])
     return Y
 #
 if __name__ == '__main__':
@@ -163,7 +145,7 @@ print("Computing LLE embedding")
 X_r, err = manifold.locally_linear_embedding(X, n_neighbors=15,
                                                  n_components=2)
 print("Done. Reconstruction error: %g" % err)
-#X_r = lle(X, K=15, d=2)
+#X_r = lle(X, K=13, d=2)
 
 #----------------------------------------------------------------------
 # Plot result

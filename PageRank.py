@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 # Author: 小狼狗
-<<<<<<< HEAD
+
 '''
 ==================================================================
                         PageRank
 ==================================================================
 '''
-=======
->>>>>>> d342b1271f8f34211a4b1da7b8d64ed320fe6cf1
+
 from pygraph.classes.digraph import digraph
 
 
@@ -53,11 +52,11 @@ class PRIterator:
                 flag = True
                 break
         if flag:
-<<<<<<< HEAD
+
             print("finished in %s iterations!" % (i+1))
-=======
+
             print("finished in %s iterations!" % node)
->>>>>>> d342b1271f8f34211a4b1da7b8d64ed320fe6cf1
+
         else:
             print("finished out of 100 iterations!")
         return page_rank
