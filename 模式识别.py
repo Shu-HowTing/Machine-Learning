@@ -6,11 +6,11 @@
 import csv
 import numpy as np
 from sklearn.svm import SVC
-from sklearn import grid_search
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 lst =[]
-with open('data.csv','r') as f:
+with open('./data/data.csv','r') as f:
     data = csv.reader(f)
     for row in data:
         lst.append(row)
@@ -24,7 +24,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 parameter = {'kernel':("linear","rbf"), "C":[1, 10, 100]}
 svm = SVC()
 
-clf = grid_search.GridSearchCV(svm, parameter)
+clf = GridSearchCV(svm, parameter)
 clf.fit(X_train,y_train)
 pred = clf.predict(X_test)
 print (clf.best_score_,clf.best_params_)
@@ -35,5 +35,4 @@ plt.xlabel('N', fontsize=14)
 plt.ylabel('PRT', fontsize=14)
 plt.show()
 
-
-
+#

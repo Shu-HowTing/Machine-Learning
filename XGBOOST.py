@@ -9,11 +9,8 @@
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from sklearn.cross_validation import train_test_split
-
-rom
-xgboost.sklearn
-import XGBClassifier
+from sklearn.model_selection import train_test_split
+from xgboost.sklearn import XGBClassifier
 
 
 #记录程序运行时间

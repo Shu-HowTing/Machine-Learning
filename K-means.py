@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 #plt.style.use('ggplot')
 
 # Importing the dataset
-data = pd.read_csv('xclara.csv')
+data = pd.read_csv('./data/xclara.csv')
 print("Input Data and Shape")
 print(data.shape)
 data.head()
@@ -141,6 +141,6 @@ def loadfile(filename):
     return lst
 
 if __name__ == '__main__':
-    X = loadfile('test_set.csv')
+    X = loadfile('./data/test_set.csv')
     X = np.array(X)
     k_means(X, 4)
